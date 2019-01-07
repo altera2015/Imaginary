@@ -17,14 +17,14 @@ class NextRoundWidget extends StatefulWidget {
 
 class _NextRoundState extends State<NextRoundWidget> {
 
-  String _word = "Picking a word...";
   bool _newWordGenerated = false;
 
   void _initWord() {
+    widget._game.word = "Picking a word...";
     widget._words.getWord().then((String word) {
       setState(() {
         _newWordGenerated = true;
-        _word = word;
+        widget._game.word = word;
       });
     });
   }
@@ -35,10 +35,33 @@ class _NextRoundState extends State<NextRoundWidget> {
     _initWord();
   }
 
+  Future<bool> _onWillPop() {
+    return showDialog(
+      context: context,
+      builder: (context) => new AlertDialog(
+        title: new Text('Are you sure?'),
+        content: new Text('This will end your current game and all scores will be lost, are you sure?'),
+        actions: <Widget>[
+          new FlatButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: new Text('No'),
+          ),
+          new FlatButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: new Text('Yes'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
+
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: _onWillPop,
+        child: Scaffold(
         appBar: AppBar(
           title: Text("Next Round!"),
         ),
@@ -48,7 +71,15 @@ class _NextRoundState extends State<NextRoundWidget> {
 
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Icon(Icons.person, color: widget._game.drawer().color, size: 50.0,),
+                  Text( "Next person drawing:"),
+                  IconButton(
+                    icon:Icon(Icons.person, color: widget._game.drawer().color, size: 50.0,),
+                    onPressed: () {
+                      setState( () {
+                        widget._game.nextDrawer();
+                      });
+                    },
+                  ),
                   SizedBox(
                     height: 20.0,
                   ),
@@ -67,11 +98,12 @@ class _NextRoundState extends State<NextRoundWidget> {
                           child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(_word,
+                                Text(widget._game.word,
                                     style: Theme.of(context).textTheme.title.apply(color: Colors.white)),
                                 FlatButton(
                                     child: Icon(Icons.refresh, size: 48, color: Colors.white),
                                     onPressed: () {
+                                      widget._words.reject(widget._game.word);
                                       _initWord();
                                     })
                               ]))),
@@ -96,16 +128,19 @@ class _NextRoundState extends State<NextRoundWidget> {
                                 return;
                               }
 
-                              await Navigator.push(
+                              widget._words.accept(widget._game.word);
+                              bool a = await Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => GamePage(widget._words, _word, widget._game))
+                                  MaterialPageRoute(builder: (context) => GamePage(widget._words, widget._game))
                               );
 
-                              widget._game.nextDrawer();
-                              _initWord();
+                              if ( a == true ) {
+                                widget._game.nextDrawer();
+                                _initWord();
+                              }
 
                             }),
                       ])
-                ])));
+                ]))));
   }
 }

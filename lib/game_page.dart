@@ -6,13 +6,13 @@ import 'words.dart';
 import 'dart:async';
 import 'dart:math';
 import 'player.dart';
+import 'post_game.dart';
 
 class GamePage extends StatefulWidget {
   final Words _words;
   final Game _game;
-  final String _word;
 
-  GamePage(this._words, this._word, this._game, {Key key}) : super(key: key);
+  GamePage(this._words, this._game, {Key key}) : super(key: key);
 
   @override
   _GamePageState createState() => new _GamePageState();
@@ -20,15 +20,20 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage> {
   DrawPainter _painter;
-
-  String _guessedWord;
   int _totalSeconds;
   int _currentSeconds;
   Timer _countdown;
   Stopwatch _stopwatch;
+  List<Widget> _acceptButtons;
   Random _rnd = Random(DateTime.now().millisecondsSinceEpoch);
 
+
   void _startTimer(int total) {
+    if ( total < 0 ) {
+      _totalSeconds = 1;
+      _currentSeconds = 1;
+      return;
+    }
     _totalSeconds = total;
     _currentSeconds = 0;
     if (_countdown != null) {
@@ -44,6 +49,15 @@ class _GamePageState extends State<GamePage> {
     });
   }
 
+  void _toolUpdated () {
+    if (_painter.tool != null) {
+      _painter.tool.floatActionButtonStateChanged = () {
+        setState(() {});
+      };
+    }
+
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,8 +65,8 @@ class _GamePageState extends State<GamePage> {
     _stopwatch = Stopwatch();
     _totalSeconds = 0;
     _currentSeconds = 0;
-    _guessedWord = null;
     _startTimer(120);
+    _toolUpdated();
   }
 
   @override
@@ -65,114 +79,61 @@ class _GamePageState extends State<GamePage> {
   void _finished(BuildContext context, Color color) async {
     Duration elapsed = _stopwatch.elapsed;
     _stopwatch.stop();
-    widget._words.solve(widget._word, elapsed);
     Player p = Player.find(widget._game.players, color);
-    if (p != null) {
-      p.points += 1;
-    } else {
+
+    if ( p != null ) {
+      p.points++;
     }
-    setState( () {
-      _guessedWord = widget._word;
-    });
+
+    bool a = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                PostGamePage(widget._game, p)));
+
+    if ( a == null ) {
+      if ( p != null ) {
+        p.points--;
+      }
+      _stopwatch.start();
+      _startTimer(120 - _currentSeconds);
+    } else {
+      if ( color != null ) {
+        widget._words.solve(widget._game.word, elapsed);
+      } else {
+        widget._words.failToSolve(widget._game.word);
+      }
+      Navigator.pop(context, true);
+    }
+
   }
 
-  Widget buildPostGame(BuildContext context) {
-    List<Widget> list = [];
-
-    list.add(Text("$_guessedWord",
-        textAlign: TextAlign.center, style: Theme.of(context).textTheme.title));
-
-    widget._game.players.sort((Player p1, Player p2) {
-      return p2.points - p1.points;
-    });
-
-    widget._game.players.forEach((Player player) {
-      list.add(Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Icon(Icons.person, color: player.color),
-        SizedBox(width: 10.0),
-        Text("${player.points}")
-      ]));
-    });
-
-    widget._game.players.sort((Player p1, Player p2) {
-      return p1.index - p2.index;
-    });
-
-    list.add(Padding(
-        padding: EdgeInsets.all(20.0),
-        child: RaisedButton(
-          child: Text("Next round!"),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        )));
-
-    return Scaffold(
-        appBar: new AppBar(
-          title: new Text("Imaginary"),
-        ),
-        body: Padding(
-            padding: EdgeInsets.all(4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: list,
-            )));
-  }
 
   @override
   Widget build(BuildContext context) {
 
-    if (_painter.tool != null) {
-      _painter.tool.floatActionButtonStateChanged = () {
-        setState(() {});
-      };
-    }
-
-    if (_guessedWord != null) {
-      return buildPostGame(context);
-    }
-
-    List<Widget> acceptButtons = [];
-    widget._game.players.forEach((Player player) {
-      //if ( widget._game.drawer() != player ) {
-        acceptButtons.add(IconButton(
+    if (_acceptButtons == null ) {
+      _acceptButtons = [];
+      widget._game.players.forEach((Player player) {
+        if ( widget._game.drawer() != player ) {
+        _acceptButtons.add(IconButton(
             icon: Icon(Icons.person),
             color: player.color,
             onPressed: () {
               _finished(context, player.color);
             }));
-      // }
-    });
-    acceptButtons.add(IconButton(
-        icon: Icon(Icons.thumb_down),
-        color: Colors.black,
-        onPressed: () {
-          _finished(context, null);
-        }));
+        }
+      });
+      _acceptButtons.add(IconButton(
+          icon: Icon(Icons.thumb_down),
+          color: Colors.black,
+          onPressed: () {
+            _finished(context, null);
+          }));
+    }
 
     return Scaffold(
-      /* drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              child: Text("Imaginary"),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
-            ListTile(
-              title: Text("New Game"),
-              onTap: () {
-                Navigator.pop(context);
-                _startGame(context);
-              }
-            )
 
-          ],
-        )
-      ),*/
       appBar: new AppBar(
         title: new Text("Imaginary"),
         actions: <Widget>[
@@ -202,7 +163,7 @@ class _GamePageState extends State<GamePage> {
         child: new Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: acceptButtons),
+            children: _acceptButtons),
       ),
       body: Column(children: [
         LinearProgressIndicator(

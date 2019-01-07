@@ -4,6 +4,7 @@ import 'package:flutter/painting.dart';
 class Game {
   List<Player> players;
   int currentDrawer;
+  String word;
 
   void nextDrawer() {
     currentDrawer++;

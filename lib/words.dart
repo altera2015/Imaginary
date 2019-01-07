@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
-
+import 'dart:math';
 import 'package:flutter/services.dart' show rootBundle;
 
 class Words {
@@ -48,6 +48,34 @@ class Words {
     }
   }
 
+
+  Future<void> dump() async {
+    await _initialize();
+    List<Map> wordList = await database.query('words', columns: ['word', 'accept_cnt', 'reject_cnt', 'fail_cnt', 'last_offer' ], orderBy: "last_offer ASC");
+    wordList.forEach( (Map m) {
+      print(m);
+    });
+  }
+
+  Future<void> clearLastOffers() async {
+    await _initialize();
+    String sql = "UPDATE words SET last_offer=NULL";
+    await database.execute(sql);
+  }
+
+  Future<double> getStats() async {
+    await _initialize();
+    List<Map> sum = await database.rawQuery("SELECT count(1) as sum FROM words WHERE last_offer is not null");
+    print(sum);
+    List<Map> tsum = await database.rawQuery("SELECT count(1) as sum FROM words");
+    print(tsum);
+    double s = sum[0]["sum"].toDouble();
+    double t = tsum[0]["sum"].toDouble();
+    double pct = (s/t * 1000.0).round() / 10.0;
+    print(pct);
+    return pct;
+  }
+
   Future<String> getWord() async {
 
     await _initialize();
@@ -87,7 +115,7 @@ class Words {
     await database.execute(sql, [word]);
   }
 
-  Future<void> failToSolve(StringSink word) async {
+  Future<void> failToSolve(String word) async {
     await _initialize();
     String sql = "UPDATE words SET fail_cnt=fail_cnt+1 WHERE word=?";
     await database.execute(sql, [word]);

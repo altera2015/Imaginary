@@ -41,7 +41,6 @@ class _NewGameState extends State<NewGamePage> {
 
   @override
   Widget build(BuildContext context) {
-
     int cnt = 0;
     for (int i = 0; i < _activePlayers.length; i++) {
       if (_activePlayers[i]) {
@@ -50,6 +49,32 @@ class _NewGameState extends State<NewGamePage> {
     }
 
     return Scaffold(
+        drawer: Drawer(
+            child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text("Imaginary"),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            ListTile(
+                title: Text("Reset word database"),
+                onTap: () {
+                  _words.clearLastOffers();
+                  Navigator.pop(context);
+                }),
+            ListTile(
+                title: Text("Dump"),
+                onTap: () {
+                  // _words.dump();
+                  _words.getStats();
+                  Navigator.pop(context);
+                })
+
+          ],
+        )),
         appBar: new AppBar(
           title: new Text(widget.title),
         ),
@@ -108,23 +133,23 @@ class _NewGameState extends State<NewGamePage> {
                 Padding(
                     padding: EdgeInsets.all(20.0),
                     child: RaisedButton(
-
                       child: Text("Start game!"),
-                      onPressed: cnt == 0 ? null : () {
-
-                        _game.players = [];
-                        for (int i = 0; i < _activePlayers.length; i++) {
-                          if (_activePlayers[i]) {
-                            _game.players.add(Player(i, _colors[i], 0));
-                          }
-                        }
-                        _game.currentDrawer = 0;
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    NextRoundWidget(_words, _game)));
-                      },
+                      onPressed: cnt == 0
+                          ? null
+                          : () {
+                              _game.players = [];
+                              for (int i = 0; i < _activePlayers.length; i++) {
+                                if (_activePlayers[i]) {
+                                  _game.players.add(Player(i, _colors[i], 0));
+                                }
+                              }
+                              _game.currentDrawer = 0;
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          NextRoundWidget(_words, _game)));
+                            },
                     ))
               ],
             )));
