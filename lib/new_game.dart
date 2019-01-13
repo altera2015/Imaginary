@@ -17,13 +17,6 @@ class NewGamePage extends StatefulWidget {
 class _NewGameState extends State<NewGamePage> {
   Game _game;
   List<bool> _activePlayers = [true, true, false, false, false];
-  final List<Color> _colors = [
-    Colors.red,
-    Colors.green,
-    Colors.blue,
-    Colors.yellow,
-    Colors.purple
-  ];
   Words _words;
 
   @override
@@ -37,6 +30,25 @@ class _NewGameState extends State<NewGamePage> {
   void dispose() {
     _words.dispose();
     super.dispose();
+  }
+
+  Iterable<Widget> get playerWidgets sync* {
+    for (PlayerConfig config in PlayerConfig.players) {
+      yield Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: FilterChip(
+          avatar: CircleAvatar(
+              child: Icon(config.iconData, color: config.color, size: 25)),
+          label: Text(config.name),
+          selected: _activePlayers[config.index],
+          onSelected: (bool value) {
+            setState(() {
+              _activePlayers[config.index] = value;
+            });
+          },
+        ),
+      );
+    }
   }
 
   @override
@@ -72,7 +84,6 @@ class _NewGameState extends State<NewGamePage> {
                   _words.getStats();
                   Navigator.pop(context);
                 })
-
           ],
         )),
         appBar: new AppBar(
@@ -86,49 +97,8 @@ class _NewGameState extends State<NewGamePage> {
               children: <Widget>[
                 Text("Imaginary, drawing fun with real life friends.",
                     textAlign: TextAlign.center),
-                CheckboxListTile(
-                  title: Icon(Icons.person, color: _colors[0]),
-                  value: _activePlayers[0],
-                  onChanged: (bool value) {
-                    setState(() {
-                      _activePlayers[0] = value;
-                    });
-                  },
-                ),
-                CheckboxListTile(
-                    title: Icon(Icons.person, color: _colors[1]),
-                    value: _activePlayers[1],
-                    onChanged: (bool value) {
-                      setState(() {
-                        _activePlayers[1] = value;
-                      });
-                    }),
-                CheckboxListTile(
-                  title: Icon(Icons.person, color: _colors[2]),
-                  value: _activePlayers[2],
-                  onChanged: (bool value) {
-                    setState(() {
-                      _activePlayers[2] = value;
-                    });
-                  },
-                ),
-                CheckboxListTile(
-                  title: Icon(Icons.person, color: _colors[3]),
-                  value: _activePlayers[3],
-                  onChanged: (bool value) {
-                    setState(() {
-                      _activePlayers[3] = value;
-                    });
-                  },
-                ),
-                CheckboxListTile(
-                  title: Icon(Icons.person, color: _colors[4]),
-                  value: _activePlayers[4],
-                  onChanged: (bool value) {
-                    setState(() {
-                      _activePlayers[4] = value;
-                    });
-                  },
+                Wrap(
+                  children: playerWidgets.toList(),
                 ),
                 Padding(
                     padding: EdgeInsets.all(20.0),
@@ -140,7 +110,8 @@ class _NewGameState extends State<NewGamePage> {
                               _game.players = [];
                               for (int i = 0; i < _activePlayers.length; i++) {
                                 if (_activePlayers[i]) {
-                                  _game.players.add(Player(i, _colors[i], 0));
+                                  _game.players.add(
+                                      Player(i, PlayerConfig.players[i], 0));
                                 }
                               }
                               _game.currentDrawer = 0;

@@ -42,7 +42,7 @@ packages:
       name: esys_flutter_share
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.6"
+    version: "0.0.7"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -67,6 +67,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  linalg:
+    dependency: "direct main"
+    description:
+      name: linalg
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.1"
   matcher:
     dependency: transitive
     description:
@@ -120,7 +127,7 @@ packages:
       name: sqflite
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.0+1"
+    version: "1.0.0"
   stack_trace:
     dependency: transitive
     description:
