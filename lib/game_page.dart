@@ -27,9 +27,8 @@ class _GamePageState extends State<GamePage> {
   List<Widget> _acceptButtons;
   Random _rnd = Random(DateTime.now().millisecondsSinceEpoch);
 
-
   void _startTimer(int total) {
-    if ( total < 0 ) {
+    if (total < 0) {
       _totalSeconds = 1;
       _currentSeconds = 1;
       return;
@@ -49,13 +48,12 @@ class _GamePageState extends State<GamePage> {
     });
   }
 
-  void _toolUpdated () {
+  void _toolUpdated() {
     if (_painter.tool != null) {
       _painter.tool.floatActionButtonStateChanged = () {
         setState(() {});
       };
     }
-
   }
 
   @override
@@ -75,53 +73,46 @@ class _GamePageState extends State<GamePage> {
     super.dispose();
   }
 
-
   void _finished(BuildContext context, Color color) async {
     Duration elapsed = _stopwatch.elapsed;
     _stopwatch.stop();
     Player p = Player.find(widget._game.players, color);
 
-    if ( p != null ) {
+    if (p != null) {
       p.points++;
     }
 
-    bool a = await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                PostGamePage(widget._game, p)));
+    bool a = await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => PostGamePage(widget._game, p)));
 
-    if ( a == null ) {
-      if ( p != null ) {
+    if (a == null) {
+      if (p != null) {
         p.points--;
       }
       _stopwatch.start();
       _startTimer(120 - _currentSeconds);
     } else {
-      if ( color != null ) {
+      if (color != null) {
         widget._words.solve(widget._game.word, elapsed);
       } else {
         widget._words.failToSolve(widget._game.word);
       }
       Navigator.pop(context, true);
     }
-
   }
-
 
   @override
   Widget build(BuildContext context) {
-
-    if (_acceptButtons == null ) {
+    if (_acceptButtons == null) {
       _acceptButtons = [];
       widget._game.players.forEach((Player player) {
-        if ( widget._game.drawer() != player ) {
-        _acceptButtons.add(IconButton(
-            icon: Icon(Icons.person),
-            color: player.color,
-            onPressed: () {
-              _finished(context, player.color);
-            }));
+        if (widget._game.drawer != player) {
+          _acceptButtons.add(IconButton(
+              icon: Icon(player.iconData),
+              color: player.color,
+              onPressed: () {
+                _finished(context, player.color);
+              }));
         }
       });
       _acceptButtons.add(IconButton(
@@ -133,7 +124,6 @@ class _GamePageState extends State<GamePage> {
     }
 
     return Scaffold(
-
       appBar: new AppBar(
         title: new Text("Imaginary"),
         actions: <Widget>[

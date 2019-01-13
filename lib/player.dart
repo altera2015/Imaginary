@@ -14,9 +14,7 @@ class Game {
     }
   }
 
-  Player drawer() {
-    return players[currentDrawer];
-  }
+  Player get drawer => players[currentDrawer];
 }
 
 class PlayerConfig {
@@ -35,8 +33,9 @@ class PlayerConfig {
     Colors.red,
     Colors.green,
     Colors.blue,
-    Colors.yellow,
-    Colors.purple
+    Colors.brown,
+    Colors.purple,
+    Colors.yellow
   ];
 
   static List<IconData> icons = [
@@ -44,15 +43,17 @@ class PlayerConfig {
     Icons.directions_car,
     Icons.airplanemode_active,
     Icons.ac_unit,
-    Icons.all_inclusive
+    Icons.all_inclusive,
+    Icons.access_alarm
   ];
 
   static List<PlayerConfig> players = [
     PlayerConfig.create(0, "cake"),
-    PlayerConfig.create(1, "car'"),
+    PlayerConfig.create(1, "car"),
     PlayerConfig.create(2, "plane"),
     PlayerConfig.create(3, "snow"),
     PlayerConfig.create(4, "loop"),
+    PlayerConfig.create(5, "alarm"),
   ];
 }
 

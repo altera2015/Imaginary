@@ -16,7 +16,7 @@ class NewGamePage extends StatefulWidget {
 
 class _NewGameState extends State<NewGamePage> {
   Game _game;
-  List<bool> _activePlayers = [true, true, false, false, false];
+  List<bool> _activePlayers = [true, true, false, false, false, false];
   Words _words;
 
   @override
@@ -36,14 +36,24 @@ class _NewGameState extends State<NewGamePage> {
     for (PlayerConfig config in PlayerConfig.players) {
       yield Padding(
         padding: const EdgeInsets.all(4.0),
-        child: FilterChip(
+        child: InputChip(
+          clipBehavior: Clip.none,
           avatar: CircleAvatar(
-              child: Icon(config.iconData, color: config.color, size: 25)),
-          label: Text(config.name),
-          selected: _activePlayers[config.index],
-          onSelected: (bool value) {
+            child: _activePlayers[config.index] ? Icon(Icons.check) : null,
+            backgroundColor:
+                _activePlayers[config.index] ? config.color : Colors.grey,
+          ),
+          label: Row(mainAxisSize: MainAxisSize.min, children: [
+            Text(config.name),
+            SizedBox(width: 4.0),
+            Icon(
+              config.iconData,
+              color: config.color,
+            )
+          ]),
+          onPressed: () {
             setState(() {
-              _activePlayers[config.index] = value;
+              _activePlayers[config.index] = !_activePlayers[config.index];
             });
           },
         ),
@@ -95,8 +105,10 @@ class _NewGameState extends State<NewGamePage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Text("Imaginary, drawing fun with real life friends.",
+                Text(
+                    "Imaginary, drawing fun with real life friends, local game play only!.",
                     textAlign: TextAlign.center),
+                Text("Pick your players", textAlign: TextAlign.center),
                 Wrap(
                   children: playerWidgets.toList(),
                 ),
